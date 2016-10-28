@@ -1,0 +1,68 @@
+#include <Servo.h>
+#include <stdio.h>
+#include <stdlib.h> 
+
+//int tstart = 0;
+//int tend = 0;
+
+int i = 0;
+char buf[20];
+int ch[5];
+int sys,pin,deg;
+Servo servo;
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("ready");
+}
+
+void readSerial() {
+ if (Serial.available()) {
+    buf[i] = Serial.read();
+    if (buf[i] == ';') {
+      buf[i] = '\0';
+      //Serial.println(buf);
+
+      ch[0] = atoi(strtok(buf, ","));
+      ch[1] = atoi(strtok(NULL, ","));
+      ch[2] = atoi(strtok(NULL, ","));
+
+      sys = ch[0];
+      pin = ch[1];
+      deg = ch[2];
+      
+      //Serial.println(sys);
+      //Serial.println(pin);
+      //Serial.println(deg);
+      i = 0;
+    }
+    else {
+      i++;
+    }
+  }
+}
+
+
+
+void loop(){
+  readSerial();
+
+  if(i == 0){
+    if(sys == 1){
+      //tstart = micros();
+      
+      servo.attach(pin);
+      servo.writeMicroseconds(deg);
+
+      //tend = micros();
+      //int sub = tend - tstart;
+      //Serial.println(sub);
+    }
+    if(sys == 2){
+      delay(pin);
+    }
+    else{
+      delay(1000);
+    }
+  }
+}
