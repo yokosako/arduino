@@ -1,0 +1,106 @@
+#include <Servo.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int i = 0;
+char buf[100];
+int ch[30];
+int sys,pin,deg;
+int deg2,deg3;
+Servo fin_L,fin_R,rudder;
+Servo thruster_L,thruster_R;
+
+void setup()
+{
+  Serial.begin(9600);
+  fin_L.attach(3);
+  fin_R.attach(5);
+  rudder.attach(6);
+  thruster_L.attach(9);
+  thruster_R.attach(10);
+  delay(100);
+}
+
+void readSerial(){
+  if(Serial.available()){
+    buf[i] = Serial.read();
+    if(buf[i] == ';'){
+      buf[i] = '\0';
+      ch[0] = atoi(strtok(buf,","));
+      ch[1] = atoi(strtok(NULL,","));
+      ch[2] = atoi(strtok(NULL,","));
+
+      sys = ch[0];
+      pin = ch[1];
+      deg = ch[2];
+
+      //Serial.println(sys);
+      //Serial.println(pin);
+      //Serial.println(deg);
+      i = 0;
+    }
+    else{
+      i++;
+    }
+  }
+}
+
+void loop()
+
+{
+  readSerial();
+
+  if(i == 0){
+
+    switch(sys){
+
+    case 1:
+      if(deg>=-90&&deg<=-68){
+        deg2 = (deg+90)*10+550;
+      }else if(deg>=-67&&deg<=-36){
+        deg2 = (deg+90)*10+560;
+      }else if(deg>=-35&&deg<=-4){
+        deg2 = (deg+90)*10+570;
+      }else if(deg>=-3&&deg<=28){
+        deg2 = (deg+90)*10+580;
+      }else if(deg>=29&&deg<=61){
+        deg2 = (deg+90)*10+590;
+      }else if(deg>=62&&deg<=90){
+        deg2 = (deg+90)*10+600;
+      }
+      if(pin == 3){
+        fin_L.writeMicroseconds(deg2);
+      }else if(pin == 5){
+        fin_R.writeMicroseconds(deg2);
+      }else if(pin == 6){
+        rudder.writeMicroseconds(deg2);
+      }
+      break;
+
+    case 2:
+    if(deg>=-100&&deg<=100){
+      deg2 = 1460+deg*4;
+        deg3 = 1460-4*deg;
+      }
+      if(pin == 9){
+        thruster_L.writeMicroseconds(deg2);
+      }
+      else if(pin == 10){
+        thruster_R.writeMicroseconds(deg3);
+      }
+      break;
+
+    case 3:
+      delay(pin);
+      break;
+
+    case 0:
+      thruster_L.writeMicroseconds(1000);
+      thruster_R.writeMicroseconds(1000);
+      fin_L.writeMicroseconds(1480);
+      fin_R.writeMicroseconds(1480);
+      rudder.writeMicroseconds(1480);
+      break;
+    }
+  }
+}
